@@ -1,0 +1,614 @@
+/* 
+ * OncoSecure Breast Cancer Theme CSS
+ * A comprehensive stylesheet for breast cancer care platforms
+ */
+
+/* === BREAST CANCER THEME VARIABLES === */
+:root {
+    --bc-primary: #e91e63;          /* Pink - breast cancer awareness */
+    --bc-primary-dark: #c2185b;    /* Darker pink */
+    --bc-primary-light: #f8bbd9;   /* Light pink */
+    --bc-secondary: #2196f3;       /* Medical blue */
+    --bc-secondary-dark: #1976d2;  /* Darker blue */
+    --bc-accent: #ff6b9d;          /* Bright pink accent */
+    --bc-success: #4caf50;         /* Success green */
+    --bc-warning: #ff9800;         /* Warning orange */
+    --bc-danger: #f44336;          /* Danger red */
+    --bc-light: #fce4ec;           /* Very light pink */
+    --bc-white: #ffffff;
+    --bc-gray-100: #f8f9fa;
+    --bc-gray-200: #e9ecef;
+    --bc-gray-300: #dee2e6;
+    --bc-gray-600: #6c757d;
+    --bc-gray-800: #343a40;
+    --bc-dark: #212529;
+    
+    /* Gradients */
+    --bc-gradient-primary: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
+    --bc-gradient-soft: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+    --bc-gradient-hero: linear-gradient(135deg, #e91e63 0%, #2196f3 100%);
+    
+    /* Shadows */
+    --bc-shadow-sm: 0 2px 4px rgba(233, 30, 99, 0.1);
+    --bc-shadow-md: 0 4px 12px rgba(233, 30, 99, 0.15);
+    --bc-shadow-lg: 0 8px 25px rgba(233, 30, 99, 0.2);
+}
+
+/* === GLOBAL STYLES === */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #fce4ec 0%, #fff 50%, #e1f5fe 100%);
+    min-height: 100vh;
+    color: var(--bc-gray-800);
+    padding-top: 80px;
+}
+
+/* === CUSTOM BOOTSTRAP OVERRIDES === */
+.btn-primary {
+    background: var(--bc-gradient-primary);
+    border: none;
+    border-radius: 25px;
+    padding: 0.6rem 2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: var(--bc-shadow-md);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--bc-shadow-lg);
+    background: linear-gradient(135deg, #c2185b 0%, #880e4f 100%);
+}
+
+.btn-secondary {
+    background: var(--bc-secondary);
+    border: none;
+    border-radius: 25px;
+    padding: 0.6rem 2rem;
+    font-weight: 600;
+}
+
+.btn-success {
+    background: var(--bc-success);
+    border: none;
+    border-radius: 25px;
+    padding: 0.6rem 2rem;
+    font-weight: 600;
+}
+
+.btn-sm {
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.form-control {
+    border: 2px solid var(--bc-gray-200);
+    border-radius: 15px;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--bc-primary);
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+}
+
+.alert {
+    border: none;
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+    color: #2e7d32;
+    border-left: 4px solid var(--bc-success);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.05) 100%);
+    color: #c62828;
+    border-left: 4px solid var(--bc-danger);
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%);
+    color: #ef6c00;
+    border-left: 4px solid var(--bc-warning);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%);
+    color: #1565c0;
+    border-left: 4px solid var(--bc-secondary);
+}
+
+/* === NAVIGATION === */
+.navbar {
+    background: var(--bc-gradient-primary) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--bc-shadow-lg);
+    padding: 1rem 0;
+    border-bottom: 3px solid var(--bc-primary-light);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: white !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-brand::before {
+    content: "🎗️";
+    font-size: 1.2rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+/* === CONTAINERS AND LAYOUTS === */
+.container {
+    max-width: 1200px;
+    padding: 2rem 15px;
+}
+
+/* === HEADERS === */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--bc-primary-dark);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+h1::before, h2::before {
+    content: "🎗️ ";
+    margin-right: 0.5rem;
+}
+
+h3::before, h4::before {
+    content: "💝 ";
+    margin-right: 0.5rem;
+}
+
+/* === CARDS === */
+.card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: var(--bc-shadow-md);
+    background: white;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--bc-shadow-lg);
+}
+
+.card-header {
+    background: var(--bc-gradient-soft);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.5rem;
+    font-weight: 600;
+    color: var(--bc-primary-dark);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* === TABLES === */
+.table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--bc-shadow-md);
+    margin-bottom: 2rem;
+}
+
+.table thead th {
+    background: var(--bc-gradient-primary);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    border: none;
+}
+
+.table tbody td {
+    padding: 1rem;
+    border-color: var(--bc-gray-200);
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background: var(--bc-light);
+}
+
+/* === FORMS === */
+.form-group, .mb-3 {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    font-weight: 600;
+    color: var(--bc-primary-dark);
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+select.form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23e91e63' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* === SPECIAL COMPONENTS === */
+.breast-cancer-hero {
+    background: var(--bc-gradient-hero);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+    border-radius: 0 0 50px 50px;
+    margin-bottom: 3rem;
+}
+
+.breast-cancer-hero h1 {
+    color: white;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.breast-cancer-hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--bc-shadow-md);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-card .number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--bc-primary);
+    line-height: 1;
+}
+
+.stats-card .label {
+    font-size: 0.9rem;
+    color: var(--bc-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.5rem;
+}
+
+.prediction-card {
+    border-left: 5px solid var(--bc-primary);
+    background: linear-gradient(135deg, white 0%, var(--bc-light) 100%);
+}
+
+.prediction-card.high-risk {
+    border-left-color: var(--bc-danger);
+}
+
+.prediction-card.low-risk {
+    border-left-color: var(--bc-success);
+}
+
+.risk-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.risk-badge.high {
+    background: rgba(244, 67, 54, 0.1);
+    color: var(--bc-danger);
+    border: 2px solid var(--bc-danger);
+}
+
+.risk-badge.low {
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--bc-success);
+    border: 2px solid var(--bc-success);
+}
+
+.confidence-bar {
+    background: var(--bc-gray-200);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.confidence-fill {
+    background: var(--bc-gradient-primary);
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* === BREAST CANCER AWARENESS ELEMENTS === */
+.ribbon {
+    display: inline-block;
+    font-size: 2rem;
+    margin: 0 0.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.awareness-section {
+    background: var(--bc-gradient-soft);
+    padding: 3rem 0;
+    margin: 3rem 0;
+    border-radius: 30px;
+    text-align: center;
+}
+
+.awareness-section h3 {
+    color: var(--bc-primary-dark);
+    margin-bottom: 2rem;
+}
+
+.support-message {
+    background: white;
+    border: 2px solid var(--bc-primary-light);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+    position: relative;
+}
+
+.support-message::before {
+    content: "💕";
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0 1rem;
+    font-size: 1.5rem;
+}
+
+/* === DASHBOARD SPECIFIC STYLES === */
+.dashboard-welcome {
+    background: var(--bc-gradient-soft);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.patient-info-card {
+    background: linear-gradient(135deg, white 0%, rgba(233, 30, 99, 0.05) 100%);
+    border: 2px solid var(--bc-primary-light);
+}
+
+.appointment-card {
+    border-left: 4px solid var(--bc-secondary);
+    transition: all 0.3s ease;
+}
+
+.appointment-card:hover {
+    border-left-color: var(--bc-primary);
+    transform: translateX(5px);
+}
+
+.medical-report-form {
+    background: var(--bc-light);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+/* === LOGIN/REGISTER FORMS === */
+.auth-container {
+    min-height: calc(100vh - 160px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 25px;
+    box-shadow: var(--bc-shadow-lg);
+    padding: 3rem;
+    max-width: 450px;
+    width: 100%;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+    color: var(--bc-primary);
+    margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+    color: var(--bc-gray-600);
+    font-size: 0.95rem;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .breast-cancer-hero h1 {
+        font-size: 2rem;
+    }
+
+    .btn {
+        padding: 0.8rem 1.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-card .number {
+        font-size: 2rem;
+    }
+
+    .table-responsive {
+        border-radius: 15px;
+    }
+
+    .auth-card {
+        margin: 1rem;
+        padding: 2rem;
+    }
+
+    h1::before, h2::before, h3::before, h4::before {
+        display: none;
+    }
+}
+
+/* === ANIMATION UTILITIES === */
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* === FOOTER === */
+.footer {
+    background: var(--bc-gradient-primary);
+    color: white;
+    padding: 3rem 0 1rem;
+    margin-top: 4rem;
+    border-radius: 50px 50px 0 0;
+}
+
+.footer .support-links {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.footer .support-links a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: 500;
+}
+
+.footer .support-links a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+/* === ACCESSIBILITY IMPROVEMENTS === */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.focus-visible:focus {
+    outline: 3px solid var(--bc-primary);
+    outline-offset: 2px;
+}
+
+/* === UTILITY CLASSES === */
+.text-primary-custom {
+    color: var(--bc-primary) !important;
+}
+
+.bg-primary-custom {
+    background: var(--bc-gradient-primary) !important;
+}
+
+.bg-light-pink {
+    background: var(--bc-light) !important;
+}
+
+.border-primary-custom {
+    border-color: var(--bc-primary) !important;
+}
+
+.shadow-custom {
+    box-shadow: var(--bc-shadow-md) !important;
+}
+
+.rounded-custom {
+    border-radius: 20px !important;
+}
+
+/* === LOADING STATES === */
+.loading-spinner {
+    border: 3px solid var(--bc-primary-light);
+    border-top: 3px solid var(--bc-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
