@@ -94,3 +94,49 @@ function flash_get($key){ $v = $_SESSION[$key] ?? null; if ($v) unset($_SESSION[
 // ---- OTP generator (string 6 digits) ----
 // Generates a random 6-digit OTP
 function gen_otp(){ return strval(random_int(100000, 999999)); }
+
+// DEV ONLY: fallback AES key if not set in environment
+if (!getenv('AES_KEY') && !defined('AES_KEY')) {
+    define('AES_KEY', 'this_is_my_secret_key_32_chars_long!!');
+}
+
+
+// AES helpers (declare only once)
+if (!function_exists('get_aes_key')) {
+    function get_aes_key(): string {
+        // Preferred: set AES_KEY as an environment variable (AES_KEY)
+        $key = getenv('AES_KEY') ?: (defined('AES_KEY') ? AES_KEY : null);
+
+        if (!$key) {
+            // DEVELOPMENT fallback (replace with a secure key or set env var)
+            // define('AES_KEY','put-your-very-secret-key-here-32bytes');
+            throw new RuntimeException('AES_KEY not set. Define AES_KEY env var or AES_KEY constant.');
+        }
+
+        // Ensure a 32-byte key for AES-256; derive via SHA-256 if necessary
+        return substr(hash('sha256', $key, true), 0, 32);
+    }
+}
+
+if (!function_exists('encrypt_aes')) {
+    function encrypt_aes(string $plaintext): string {
+        if ($plaintext === '') return ''; // keep empty
+        $key = get_aes_key();
+        $iv = random_bytes(16);
+        $cipher = openssl_encrypt($plaintext, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        return base64_encode($iv . $cipher);
+    }
+}
+
+if (!function_exists('decrypt_aes')) {
+    function decrypt_aes(string $ciphertext_base64): string {
+        if ($ciphertext_base64 === '' || $ciphertext_base64 === null) return '';
+        $key = get_aes_key();
+        $data = base64_decode($ciphertext_base64, true);
+        if ($data === false || strlen($data) < 17) return '';
+        $iv = substr($data, 0, 16);
+        $cipher = substr($data, 16);
+        $plaintext = openssl_decrypt($cipher, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        return $plaintext === false ? '' : $plaintext;
+    }
+}

@@ -2,30 +2,42 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_role('doctor');
 check_session_timeout();
+
 $id = intval($_GET['id'] ?? 0);
 if (!$id) { header("Location: dashboard.php"); exit; }
 
 // get patient user data
-$stmt = $pdo->prepare("SELECT p.*, u.name, u.email FROM patients p JOIN users u ON p.user_id = u.id WHERE p.id = ?");
+$stmt = $pdo->prepare("SELECT p.*, u.name, u.email 
+                       FROM patients p 
+                       JOIN users u ON p.user_id = u.id 
+                       WHERE p.id = ?");
 $stmt->execute([$id]);
 $patient = $stmt->fetch();
 if (!$patient) { header("Location: dashboard.php"); exit; }
 
+// decrypt medical_history
+$patient['medical_history'] = $patient['medical_history'] 
+    ? decrypt_aes($patient['medical_history']) 
+    : '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_report'])) {
     if (!check_csrf($_POST['csrf'] ?? '')) die('CSRF mismatch');
-    $details = sanitize($_POST['details'] ?? '');
-    if (!$details) $error = "Details required.";
-    else {
-        // store report (could encrypt details here)
+    $details = trim($_POST['details'] ?? '');
+    if (!$details) {
+        $error = "Details required.";
+    } else {
+        // encrypt report details before storing
+        $encryptedDetails = encrypt_aes($details);
+
         $stmt = $pdo->prepare("INSERT INTO medical_reports (patient_id, doctor_id, details) VALUES (?, ?, ?)");
-        $stmt->execute([$id, $_SESSION['user_id'], $details]);
+        $stmt->execute([$id, $_SESSION['user_id'], $encryptedDetails]);
         $report_id = $pdo->lastInsertId();
         logAction($pdo, $_SESSION['user_id'], "Added report $report_id for patient $id");
 
-        // Prepare data for AI (simple example: pass report text)
+        // Prepare data for AI (use plain details, not encrypted)
         $postData = ['patient_id' => $id, 'report' => $details];
-        // call internal API
-        $ch = curl_init('http://127.0.0.1:5000/predict'); // change if different
+
+        $ch = curl_init('http://127.0.0.1:5000/predict'); // update if needed
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -38,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_report'])) {
             $warning = "AI service unreachable.";
         } else {
             $json = json_decode($res, true) ?: null;
-            // assume $json = ['result'=>'High Risk','confidence'=>0.87]
             $result = $json['result'] ?? null;
             $conf = $json['confidence'] ?? null;
             $stmt = $pdo->prepare("INSERT INTO predictions (patient_id, doctor_id, input_json, result, confidence) VALUES (?, ?, ?, ?, ?)");
@@ -55,6 +66,7 @@ require_once __DIR__ . '/../includes/header.php';
 <h2>Patient Detail: <?= htmlspecialchars($patient['name']) ?></h2>
 <p><strong>Email:</strong> <?= htmlspecialchars($patient['email']) ?></p>
 <p><strong>Age:</strong> <?= htmlspecialchars($patient['age'] ?? '') ?></p>
+<p><strong>Medical History:</strong> <?= nl2br(htmlspecialchars($patient['medical_history'])) ?></p>
 
 <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
 <?php if(isset($warning)) echo "<div class='alert alert-warning'>$warning</div>"; ?>
@@ -69,6 +81,21 @@ require_once __DIR__ . '/../includes/header.php';
 
 <h4>Previous Predictions</h4>
 <?php
+// fetch reports with decryption
+$stmt = $pdo->prepare("SELECT * FROM medical_reports WHERE patient_id = ? ORDER BY created_at DESC");
+$stmt->execute([$id]);
+$reports = $stmt->fetchAll();
+?>
+<ul>
+  <?php foreach ($reports as $r): ?>
+    <li>
+      <strong><?= $r['created_at'] ?>:</strong>
+      <?= nl2br(htmlspecialchars(decrypt_aes($r['details']))) ?>
+    </li>
+  <?php endforeach; ?>
+</ul>
+
+<?php
 $stmt = $pdo->prepare("SELECT * FROM predictions WHERE patient_id = ? ORDER BY created_at DESC");
 $stmt->execute([$id]);
 $preds = $stmt->fetchAll();
@@ -79,8 +106,8 @@ $preds = $stmt->fetchAll();
     <?php foreach($preds as $pr): ?>
       <tr>
         <td><?= $pr['created_at'] ?></td>
-        <td><?= $pr['result'] ?></td>
-        <td><?= $pr['confidence'] ?></td>
+        <td><?= htmlspecialchars($pr['result']) ?></td>
+        <td><?= htmlspecialchars($pr['confidence']) ?></td>
         <td><?= htmlspecialchars($pr['recommendation']) ?></td>
       </tr>
     <?php endforeach; ?>
