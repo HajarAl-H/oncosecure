@@ -10,7 +10,7 @@ $stmt->execute();
 $doctors = $stmt->fetchAll();
 ?>
 <h2>Admin Dashboard</h2>
-<a class="btn btn-sm btn-success mb-3" href="add_doctor.php">Add Doctor</a>
+<a class="btn btn-sm btn-primary mb-3" href="add_doctor.php">Add Doctor</a>
 <h4>Doctors</h4>
 <table class="table">
   <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Created</th></tr></thead>
@@ -26,5 +26,5 @@ $doctors = $stmt->fetchAll();
   </tbody>
 </table>
 <h4>Security Logs</h4>
-<a class="btn btn-sm btn-outline-secondary mb-2" href="logs.php">View Logs</a>
+<a class="btn btn-sm btn-primary mb-2" href="logs.php">View Logs</a>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
