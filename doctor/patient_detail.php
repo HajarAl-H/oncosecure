@@ -54,7 +54,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 <h2>Patient Detail: <?= htmlspecialchars($patient['name']) ?></h2>
 <p><strong>Email:</strong> <?= htmlspecialchars($patient['email']) ?></p>
-<p><strong>Age:</strong> <?= htmlspecialchars($patient['age']) ?></p>
+<p><strong>Age:</strong> <?= htmlspecialchars($patient['age'] ?? '') ?></p>
 
 <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
 <?php if(isset($warning)) echo "<div class='alert alert-warning'>$warning</div>"; ?>
