@@ -5,8 +5,19 @@ check_session_timeout();
 require_once __DIR__ . '/../includes/header.php';
 
 // list patients assigned or all patients (simple)
-$stmt = $pdo->prepare("SELECT p.id, u.name, u.email, p.age, p.created_at FROM patients p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC");
-$stmt->execute();
+// $stmt = $pdo->prepare("SELECT p.id, u.name, u.email, p.age, p.created_at FROM patients p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC");
+// $stmt->execute();
+$stmt = $pdo->prepare("
+    SELECT DISTINCT p.id, u.name, u.email, p.age, p.created_at
+    FROM patients p
+    JOIN users u ON p.user_id = u.id
+    JOIN appointments a ON a.patient_id = p.id
+    WHERE a.doctor_id = ?
+    ORDER BY p.created_at DESC
+");
+$stmt->execute([$_SESSION['user_id']]);
+
+
 $patients = $stmt->fetchAll();
 ?>
 <h2>Doctor Dashboard</h2>
