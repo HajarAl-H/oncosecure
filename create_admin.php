@@ -2,7 +2,7 @@
 // create_admin.php - run once to create admin (delete after use)
 require_once __DIR__ . '/includes/db.php';
 $name = 'System Admin';
-$email = 'admin@oncosecure.com';
+$email = 'admin@gmail.com';
 $pass = password_hash('Admin@1234', PASSWORD_DEFAULT);
 $role = 'admin';
 try {
