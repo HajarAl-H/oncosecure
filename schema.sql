@@ -28,6 +28,7 @@ CREATE TABLE patients (
   address VARCHAR(255) DEFAULT NULL,
   marital_status ENUM('single','married','other') DEFAULT 'single',
   medical_history TEXT,
+  medical_history_file VARCHAR(255) NULL,
   doctor_id INT DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -52,9 +53,11 @@ CREATE TABLE medical_reports (
   patient_id INT NOT NULL,
   doctor_id INT NOT NULL,
   details TEXT,
+  appointment_id INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
-  FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
 );
 
 CREATE TABLE predictions (
@@ -65,10 +68,13 @@ CREATE TABLE predictions (
   result ENUM('High Risk','Low Risk') DEFAULT NULL,
   confidence FLOAT DEFAULT NULL,
   recommendation TEXT,
+  appointment_id INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
-  FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (doctor_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE otp (
   id INT AUTO_INCREMENT PRIMARY KEY,

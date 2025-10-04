@@ -28,11 +28,13 @@ if (session_status() === PHP_SESSION_NONE) session_start();
             <li class="nav-item"><a class="nav-link" href="/admin/dashboard.php">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="/admin/add_doctor.php">Add Doctor</a></li>
           <?php elseif ($_SESSION['role'] === 'doctor'): ?>
+            <li class="nav-item"><a class="nav-link" href="/doctor/profile.php">My Profile</a></li>
             <li class="nav-item"><a class="nav-link" href="/doctor/dashboard.php">Patients</a></li>
           <?php elseif ($_SESSION['role'] === 'patient'): ?>
             <li class="nav-item"><a class="nav-link" href="/patient/dashboard.php">My Health</a></li>
             <li class="nav-item"><a class="nav-link" href="/patient/appointments.php">Appointments</a></li>
             <li class="nav-item"><a class="nav-link" href="/patient/profile.php">Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="/patient/medical_history.php">Medical History</a></li>
           <?php endif; ?>
         <?php endif; ?>
       </ul>

@@ -5,23 +5,16 @@ check_session_timeout();
 
 $uid = $_SESSION['user_id'];
 
-// fetch profile
+// 🧍 Fetch patient profile (excluding medical history)
 $stmt = $pdo->prepare("SELECT p.*, u.email FROM patients p JOIN users u ON p.user_id = u.id WHERE p.user_id = ?");
 $stmt->execute([$uid]);
 $patient = $stmt->fetch();
-
-if ($patient) {
-    $patient['medical_history'] = $patient['medical_history'] 
-        ? decrypt_aes($patient['medical_history']) 
-        : '';
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!check_csrf($_POST['csrf'] ?? '')) die('CSRF mismatch');
 
     $age      = intval($_POST['age'] ?? 0);
     $weight   = floatval($_POST['weight'] ?? 0);
-    $history  = sanitize($_POST['history'] ?? '');
     $phone    = sanitize($_POST['phone'] ?? '');
     $address  = sanitize($_POST['address'] ?? '');
     $marital  = sanitize($_POST['marital_status'] ?? '');
@@ -36,13 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($marital, ['single','married','other'])) {
         $error = "Invalid marital status.";
     } else {
-        // encrypt history only
-        $encHistory = $history ? encrypt_aes($history) : null;
-
+        // ✅ Update profile (no medical history here)
         $stmt = $pdo->prepare("UPDATE patients 
-                               SET age = ?, weight = ?, medical_history = ?, phone = ?, address = ?, marital_status = ?
+                               SET age = ?, weight = ?, phone = ?, address = ?, marital_status = ?
                                WHERE user_id = ?");
-        $stmt->execute([$age, $weight, $encHistory, $phone, $address, $marital, $uid]);
+        $stmt->execute([$age, $weight, $phone, $address, $marital, $uid]);
 
         logAction($pdo, $uid, "Patient updated profile");
         flash_set('success','Profile updated.');
@@ -96,12 +87,8 @@ require_once __DIR__ . '/../includes/header.php';
     </select>
   </div>
 
-  <div class="mb-3">
-    <label>Medical History</label>
-    <textarea class="form-control" name="history"><?= htmlspecialchars($patient['medical_history'] ?? '') ?></textarea>
-  </div>
-
   <button class="btn btn-primary" type="submit">Save</button>
+  <a href="dashboard.php" class="btn btn-secondary ms-2">Back</a>
 </form>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
