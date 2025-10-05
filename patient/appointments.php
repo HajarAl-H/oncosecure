@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once __DIR__ . '/../includes/functions.php';
 require_role('patient');
 check_session_timeout();
@@ -26,13 +26,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     } elseif ($hour < 8 || $hour > 17) {
         flash_set('error','Appointments only allowed between 08:00 and 17:00.');
     } else {
-        // prevent doctor double booking
+
+        // ⛔ Prevent booking with same doctor if there's a pending/approved one
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM appointments 
+            WHERE patient_id = ? AND doctor_id = ? AND status IN ('pending','approved')
+        ");
+        $stmt->execute([$patient_id, $doctor_id]);
+        if ($stmt->fetchColumn() > 0) {
+            flash_set('error','You already have a pending or approved appointment with this doctor.');
+            header("Location: appointments.php");
+            exit;
+        }
+
+        // prevent doctor double booking at the same time
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appointment_date = ?");
         $stmt->execute([$doctor_id, $date]);
         if ($stmt->fetchColumn() > 0) {
             flash_set('error','This doctor already has an appointment at this time.');
         } else {
-            // prevent patient double booking
+            // prevent patient double booking at same time with different doctor
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE patient_id = ? AND appointment_date = ?");
             $stmt->execute([$patient_id, $date]);
             if ($stmt->fetchColumn() > 0) {
@@ -41,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
                 $stmt = $pdo->prepare("INSERT INTO appointments (patient_id, doctor_id, appointment_date) VALUES (?, ?, ?)");
                 $stmt->execute([$patient_id, $doctor_id, $date]);
                 logAction($pdo, $uid, "Booked appointment with doctor $doctor_id at $date");
-                flash_set('success','Appointment booked.');
+                flash_set('success','Appointment booked successfully.');
             }
         }
     }
@@ -71,7 +84,7 @@ $stmt = $pdo->prepare("
     FROM appointments a 
     JOIN users u ON a.doctor_id = u.id 
     WHERE a.patient_id = ?
-    ORDER BY a.appointment_date DESC
+    ORDER BY a.created_at DESC
 ");
 $stmt->execute([$patient_id]);
 $appts = $stmt->fetchAll();
@@ -108,6 +121,7 @@ require_once __DIR__ . '/../includes/header.php';
 <table class="table table-striped align-middle">
   <thead>
     <tr>
+      <th>Ref</th>
       <th>Date</th>
       <th>Doctor</th>
       <th>Status</th>
@@ -117,10 +131,9 @@ require_once __DIR__ . '/../includes/header.php';
   <tbody>
     <?php foreach($appts as $a): ?>
       <tr>
+        <td><strong><?= formatAppointmentRef($a['id']) ?></strong></td>
         <td><?= htmlspecialchars($a['appointment_date']) ?></td>
-        <td>
-          <?= htmlspecialchars($a['doctor_name']) ?><br>
-        </td>
+        <td><?= htmlspecialchars($a['doctor_name']) ?></td>
         <td>
           <?php if ($a['status'] === 'pending'): ?>
             <span class="badge bg-secondary">Pending</span>
@@ -145,5 +158,6 @@ require_once __DIR__ . '/../includes/header.php';
     <?php endforeach; ?>
   </tbody>
 </table>
+<a href="dashboard.php" class="btn btn-secondary ms-2">Back</a>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

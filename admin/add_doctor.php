@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_role('admin');
 check_session_timeout();
+require_once __DIR__ . '/../includes/mail_config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!check_csrf($_POST['csrf'] ?? '')) die('CSRF mismatch');
@@ -28,21 +29,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!preg_match('/^[0-9]{8}$/', $phone)) {
         $error = "Phone must be 8 digits.";
     } else {
-        $temp = bin2hex(random_bytes(4));
+        $temp = bin2hex(random_bytes(4)); // temp password
         $hash = password_hash($temp, PASSWORD_DEFAULT);
 
         try {
             $stmt = $pdo->prepare("
-            INSERT INTO users 
-            (name, email, password, role, phone, address, specialization, experience, certificates, force_password_change) 
-            VALUES (?,?,?,?,?,?,?,?,?,0)
+                INSERT INTO users 
+                (name, email, password, role, phone, address, specialization, experience, certificates, force_password_change) 
+                VALUES (?,?,?,?,?,?,?,?,?,0)
             ");
             $stmt->execute([$name, $email, $hash, 'doctor', $phone, $address, $specialization, $experience, $cert_file]);
-
             $id = $pdo->lastInsertId();
             logAction($pdo, $_SESSION['user_id'], "Added doctor ID $id");
 
-            flash_set('success', "Doctor created. Temp password: $temp");
+            // 📧 Send email with credentials
+            $subject = "Welcome to OncoSecure – Your Account Details";
+            $body = "
+                Hello Dr. {$name},<br><br>
+                Your OncoSecure account has been created.<br>
+                <b>Email:</b> {$email}<br>
+                <b>Temporary Password:</b> {$temp}<br><br>
+                Please log in and change your password upon first login.
+            ";
+            sendEmail($email, $subject, $body);
+
+            flash_set('success', "Doctor created successfully and credentials emailed.");
             header("Location: dashboard.php");
             exit;
         } catch (PDOException $e) {

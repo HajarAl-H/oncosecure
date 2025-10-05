@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Muscat');
+
 // includes/functions.php
 // This file contains various helper functions for the application
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -58,7 +60,7 @@ function reset_failed_attempts($pdo, $user_id){
 
 // ---- Session timeout check (include on protected pages) ----
 // Checks if a user's session has timed out and redirects them to the login page if it has
-function check_session_timeout($timeout_seconds = 240){
+function check_session_timeout($timeout_seconds = 900){
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout_seconds)){
         session_unset();
         session_destroy();
@@ -90,6 +92,16 @@ function require_role($role){
 function flash_set($key, $msg){ $_SESSION[$key] = $msg; }
 // Gets a flash message from the session and removes it
 function flash_get($key){ $v = $_SESSION[$key] ?? null; if ($v) unset($_SESSION[$key]); return $v; }
+
+
+/**
+ * Format Appointment ID into a readable reference
+ * Example: ID 12 → APPT-00012
+ */
+function formatAppointmentRef($id) {
+    return 'APPT-' . str_pad($id, 5, '0', STR_PAD_LEFT);
+}
+
 
 // ---- OTP generator (string 6 digits) ----
 // Generates a random 6-digit OTP
@@ -140,3 +152,4 @@ if (!function_exists('decrypt_aes')) {
         return $plaintext === false ? '' : $plaintext;
     }
 }
+

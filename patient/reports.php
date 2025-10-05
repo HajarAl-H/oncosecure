@@ -12,7 +12,7 @@ $patient = $stmt->fetch();
 if (!$patient) { header("Location: profile.php"); exit; }
 $patient_id = $patient['id'];
 
-// Optional: filter by appointment id
+// ✅ Optional: filter by appointment ID (from URL)
 $appointment_id = isset($_GET['appointment']) ? intval($_GET['appointment']) : null;
 
 // ✅ Fetch completed appointments for this patient
@@ -21,10 +21,19 @@ $sql = "
     FROM appointments a
     JOIN users u ON a.doctor_id = u.id
     WHERE a.patient_id = ? AND a.status = 'completed'
-    ORDER BY a.appointment_date DESC
 ";
+
+$params = [$patient_id];
+
+if ($appointment_id) {
+    $sql .= " AND a.id = ?";
+    $params[] = $appointment_id;
+}
+
+$sql .= " ORDER BY a.appointment_date DESC";
+
 $stmt = $pdo->prepare($sql);
-$stmt->execute([$patient_id]);
+$stmt->execute($params);
 $appointments = $stmt->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
@@ -33,7 +42,7 @@ require_once __DIR__ . '/../includes/header.php';
 <h2>📝 Medical Reports & AI Results</h2>
 
 <?php if (empty($appointments)): ?>
-  <div class="alert alert-info">No completed appointments yet. Reports will appear here after your visits.</div>
+  <div class="alert alert-info">No completed appointments found.</div>
 <?php else: ?>
 
   <?php foreach ($appointments as $appt): 
@@ -41,8 +50,8 @@ require_once __DIR__ . '/../includes/header.php';
   ?>
     <div class="card mb-4">
       <div class="card-header bg-light">
-        <strong>Appointment on <?= htmlspecialchars($appt['appointment_date']) ?></strong><br>
-        Doctor: <?= htmlspecialchars($appt['doctor_name']) ?>
+        <strong><?= formatAppointmentRef($aid) ?></strong><br>
+        Date: <?= htmlspecialchars($appt['appointment_date']) ?> — Doctor: <?= htmlspecialchars($appt['doctor_name']) ?>
       </div>
       <div class="card-body">
         <!-- 📝 Doctor Reports -->
@@ -50,10 +59,10 @@ require_once __DIR__ . '/../includes/header.php';
         <?php
         $stmt = $pdo->prepare("
             SELECT * FROM medical_reports 
-            WHERE patient_id = ? AND doctor_id = ? 
+            WHERE appointment_id = ? 
             ORDER BY created_at DESC
         ");
-        $stmt->execute([$patient_id, $appt['doctor_id']]);
+        $stmt->execute([$aid]);
         $reports = $stmt->fetchAll();
 
         if ($reports):
@@ -72,10 +81,10 @@ require_once __DIR__ . '/../includes/header.php';
         <?php
         $stmt = $pdo->prepare("
             SELECT * FROM predictions 
-            WHERE patient_id = ? AND doctor_id = ?
+            WHERE appointment_id = ?
             ORDER BY created_at DESC
         ");
-        $stmt->execute([$patient_id, $appt['doctor_id']]);
+        $stmt->execute([$aid]);
         $preds = $stmt->fetchAll();
 
         if ($preds): ?>
@@ -107,5 +116,7 @@ require_once __DIR__ . '/../includes/header.php';
   <?php endforeach; ?>
 
 <?php endif; ?>
+<a href="dashboard.php" class="btn btn-secondary ms-2">Back</a>
+
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

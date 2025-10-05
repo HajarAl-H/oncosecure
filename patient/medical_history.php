@@ -99,7 +99,7 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 
   <button type="submit" class="btn btn-primary">Save</button>
-  <a href="dashboard.php" class="btn btn-secondary ms-2">Back to Dashboard</a>
+  <a href="dashboard.php" class="btn btn-secondary ms-2">Back</a>
 </form>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

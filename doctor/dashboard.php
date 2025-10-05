@@ -54,7 +54,7 @@ require_once __DIR__ . '/../includes/header.php';
 <table class="table table-striped align-middle">
   <thead>
     <tr>
-      <th>ID</th>
+      <th>Ref</th>
       <th>Patient</th>
       <th>Date</th>
       <th>Status</th>
@@ -69,7 +69,7 @@ require_once __DIR__ . '/../includes/header.php';
         JOIN patients p ON a.patient_id = p.id
         JOIN users u ON p.user_id = u.id
         WHERE a.doctor_id = ?
-        ORDER BY a.appointment_date DESC
+        ORDER BY a.created_at DESC
     ");
     $stmt->execute([$user_id]);
     $appointments = $stmt->fetchAll();
@@ -78,7 +78,11 @@ require_once __DIR__ . '/../includes/header.php';
       $status = $a['status'];
     ?>
     <tr>
-      <td><?= $a['id'] ?></td>
+      <td>
+        <a href="patient_detail.php?id=<?= htmlspecialchars($a['patient_id']) ?>&appointment=<?= htmlspecialchars($a['id']) ?>" class="text-decoration-none fw-bold">
+          <?= formatAppointmentRef($a['id']) ?>
+        </a>
+      </td>
       <td>
         <?= htmlspecialchars($a['patient_name']) ?><br>
         <small><?= htmlspecialchars($a['patient_email']) ?></small>
@@ -96,7 +100,7 @@ require_once __DIR__ . '/../includes/header.php';
         <?php endif; ?>
       </td>
       <td>
-        <!-- Status Actions -->
+        <!-- Status buttons same as before -->
         <?php if ($status === 'pending'): ?>
           <form method="post" class="d-inline">
             <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
@@ -120,23 +124,12 @@ require_once __DIR__ . '/../includes/header.php';
             <input type="hidden" name="appointment_id" value="<?= $a['id'] ?>">
             <button name="new_status" value="cancelled" class="btn btn-sm btn-danger">Cancel</button>
           </form>
-
-        <?php elseif ($status === 'completed'): ?>
-          <span class="text-muted">✔ Done</span>
-
-        <?php elseif ($status === 'cancelled'): ?>
-          <span class="text-muted">—</span>
         <?php endif; ?>
-
-        <!-- Patient Details -->
-        <a href="patient_detail.php?id=<?= htmlspecialchars($a['patient_id']) ?>" 
-           class="btn btn-sm btn-outline-dark ms-1">
-           🩺 Details / AI / Reports
-        </a>
       </td>
     </tr>
     <?php endforeach; ?>
   </tbody>
 </table>
+
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

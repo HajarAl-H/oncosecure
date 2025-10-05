@@ -66,6 +66,6 @@ require_once __DIR__ . '/../includes/header.php';
     </tr>
 </table>
 
-<a href="dashboard.php" class="btn btn-primary mt-3">Back to Dashboard</a>
+<a href="dashboard.php" class="btn btn-primary mt-3">Back</a>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -32,7 +32,7 @@ $patient = $stmt->fetch();
     <br>
     <div class="row">
       <div class="col-md-6">
-        <h4>Medical History</h4>
+        <h4>View & Edit Medical History</h4>
            <a class="btn btn-sm btn-primary" href="/patient/medical_history.php">Viwe</a>
       </div>
     </div>
@@ -40,21 +40,5 @@ $patient = $stmt->fetch();
   </div>
 </div>
 
-<h4 class="mt-4">Predictions</h4>
-<?php
-// fetch predictions
-if ($patient) {
-    $stmt = $pdo->prepare("SELECT pr.*, u.name AS doctor_name FROM predictions pr JOIN users u ON pr.doctor_id = u.id WHERE pr.patient_id = ? ORDER BY pr.created_at DESC");
-    $stmt->execute([$patient['id']]);
-    $prs = $stmt->fetchAll();
-    if ($prs) {
-        echo "<table class='table'><thead><tr><th>Date</th><th>Result</th><th>Conf.</th><th>Doctor</th><th>Recommendation</th></tr></thead><tbody>";
-        foreach($prs as $r){
-            echo "<tr><td>{$r['created_at']}</td><td>{$r['result']}</td><td>{$r['confidence']}</td><td>".htmlspecialchars($r['doctor_name'])."</td><td>".htmlspecialchars($r['recommendation'])."</td></tr>";
-        }
-        echo "</tbody></table>";
-    } else echo "<div class='alert alert-info'>No predictions yet.</div>";
-}
-?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
