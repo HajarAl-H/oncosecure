@@ -24,12 +24,17 @@ $patient['medical_history'] = $patient['medical_history']
     ? decrypt_aes($patient['medical_history']) 
     : '';
 
-// 📝 Fetch appointment status
+// 📝 Fetch appointment info (status + notes)
 $appointment_status = null;
+$appointment_notes = null;
 if ($appointment_id) {
-    $stmt = $pdo->prepare("SELECT status FROM appointments WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT status, notes FROM appointments WHERE id = ?");
     $stmt->execute([$appointment_id]);
-    $appointment_status = $stmt->fetchColumn();
+    $appt = $stmt->fetch();
+    if ($appt) {
+        $appointment_status = $appt['status'];
+        $appointment_notes = $appt['notes'];
+    }
 }
 
 // 📝 Handle new medical report
@@ -102,18 +107,30 @@ require_once __DIR__ . '/../includes/header.php';
     <p><strong>Appointment Ref:</strong> <?= formatAppointmentRef($appointment_id) ?></p>
   <?php endif; ?>
 
+  <?php if ($appointment_notes): ?>
+    <div class="col-12 mb-3">
+      <div class="card bg-light">
+        <div class="card-header"><strong>📝 Patient Notes for This Appointment</strong></div>
+        <div class="card-body">
+          <?= nl2br(htmlspecialchars($appointment_notes)) ?>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
+
   <div class="col-md-6">
     <div class="card mb-4">
       <div class="card-header"><strong>Basic Information</strong></div>
       <div class="card-body">
-        <p><strong>Name:</strong> <?= htmlspecialchars($patient['name']) ?></p>
-        <p><strong>Email:</strong> <?= htmlspecialchars($patient['email']) ?></p>
-        <p><strong>Age:</strong> <?= htmlspecialchars($patient['age']) ?></p>
-        <p><strong>Weight:</strong> <?= htmlspecialchars($patient['weight']) ?></p>
-        <p><strong>Phone:</strong> <?= htmlspecialchars($patient['phone']) ?></p>
-        <p><strong>Marital:</strong> <?= htmlspecialchars($patient['marital_status']) ?></p>
-        <p><strong>Address:</strong> <?= htmlspecialchars($patient['address']) ?></p>
+          <p><strong>Name:</strong> <?= htmlspecialchars($patient['name'] ?? '—') ?></p>
+          <p><strong>Email:</strong> <?= htmlspecialchars($patient['email'] ?? '—') ?></p>
+          <p><strong>Age:</strong> <?= htmlspecialchars($patient['age'] !== null && $patient['age'] !== '' ? $patient['age'] : '—') ?></p>
+          <p><strong>Weight:</strong> <?= htmlspecialchars($patient['weight'] !== null && $patient['weight'] !== '' ? $patient['weight'] : '—') ?></p>
+          <p><strong>Phone:</strong> <?= htmlspecialchars($patient['phone'] ?? '—') ?></p>
+          <p><strong>Marital:</strong> <?= htmlspecialchars($patient['marital_status'] ?? '—') ?></p>
+          <p><strong>Address:</strong> <?= htmlspecialchars($patient['address'] ?? '—') ?></p>
       </div>
+
     </div>
   </div>
 

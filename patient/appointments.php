@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 
     $doctor_id = intval($_POST['doctor_id']);
     $date = sanitize($_POST['appointment_date']);
+    $notes = trim($_POST['notes'] ?? '');
     $dt = strtotime($date);
     $hour = (int)date('H', $dt);
 
@@ -51,8 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
             if ($stmt->fetchColumn() > 0) {
                 flash_set('error','You already have an appointment at this time.');
             } else {
-                $stmt = $pdo->prepare("INSERT INTO appointments (patient_id, doctor_id, appointment_date) VALUES (?, ?, ?)");
-                $stmt->execute([$patient_id, $doctor_id, $date]);
+                // ✅ INSERT with notes
+                $stmt = $pdo->prepare("INSERT INTO appointments (patient_id, doctor_id, appointment_date, notes) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$patient_id, $doctor_id, $date, $notes]);
                 logAction($pdo, $uid, "Booked appointment with doctor $doctor_id at $date");
                 flash_set('success','Appointment booked successfully.');
             }
@@ -113,6 +115,10 @@ require_once __DIR__ . '/../includes/header.php';
     <input class="form-control" type="datetime-local" name="appointment_date" required>
     <small class="form-text text-muted">Appointments allowed 08:00–17:00 only.</small>
   </div>
+  <div class="mb-3">
+    <label>Notes (Optional)</label>
+    <textarea class="form-control" name="notes" rows="3" placeholder="Any additional information for the doctor..."></textarea>
+  </div>
   <button class="btn btn-primary" name="book" type="submit">Book</button>
 </form>
 
@@ -125,6 +131,7 @@ require_once __DIR__ . '/../includes/header.php';
       <th>Date</th>
       <th>Doctor</th>
       <th>Status</th>
+      <th>Notes</th>
       <th>Action</th>
     </tr>
   </thead>
@@ -145,6 +152,7 @@ require_once __DIR__ . '/../includes/header.php';
             <span class="badge bg-danger">Cancelled</span>
           <?php endif; ?>
         </td>
+        <td><?= nl2br(htmlspecialchars($a['notes'])) ?></td>
         <td>
           <?php if($a['status'] === 'pending'): ?>
             <a class="btn btn-sm btn-danger" href="?cancel=<?= $a['id'] ?>" onclick="return confirm('Cancel this appointment?')">Cancel</a>
