@@ -22,10 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // === Validations ===
     if ($age < 16 || $age > 80) {
         $error = "Age must be between 16 and 80.";
-    } elseif (!preg_match('/^[0-9]{8}$/', $phone)) {
-        $error = "Phone number must be exactly 8 digits.";
-    } elseif (!$address) {
-        $error = "Address is required.";
+    } elseif (!preg_match('/^[97][0-9]{7}$/', $phone)) {
+        $error = "Phone must start with 9 or 7 and be exactly 8 digits.";
+    } elseif (!preg_match('/^(?=.*[a-zA-Z])[a-zA-Z0-9\s]+$/', $address)) {
+        $error = "Address must contain letters (and can include numbers), not numbers only.";
     } elseif (!in_array($marital, ['single','married','other'])) {
         $error = "Invalid marital status.";
     } else {
@@ -67,15 +67,16 @@ require_once __DIR__ . '/../includes/header.php';
 
   <div class="mb-3">
     <label>Phone</label>
-    <input class="form-control" type="text" name="phone" maxlength="8" pattern="\d{8}" 
+    <input class="form-control" type="text" name="phone" maxlength="8" 
            value="<?= htmlspecialchars($patient['phone'] ?? '') ?>" required>
-    <small class="form-text text-muted">Exactly 8 digits.</small>
+    <small class="form-text text-muted">Must start with 9 or 7 and be 8 digits.</small>
   </div>
 
   <div class="mb-3">
     <label>Address</label>
     <input class="form-control" type="text" name="address" 
            value="<?= htmlspecialchars($patient['address'] ?? '') ?>" required>
+    <small class="form-text text-muted">Must contain letters (can include numbers), not numbers only.</small>
   </div>
 
   <div class="mb-3">

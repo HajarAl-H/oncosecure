@@ -21,15 +21,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $specialization = sanitize($_POST['specialization'] ?? '');
     $experience = sanitize($_POST['experience'] ?? '');
 
-    // Validation
+    // === Validation ===
     if (!$name || !$email || !$phone || !$address) {
         $error = "All required fields must be filled.";
-    } elseif (!preg_match('/^[0-9]{8}$/', $phone)) {
-        $error = "Phone number must be exactly 8 digits.";
+    } elseif (!preg_match('/^[a-zA-Z\s]+$/', $name)) {
+        $error = "Name must contain only letters and spaces.";
+    } elseif (!preg_match('/^[97][0-9]{7}$/', $phone)) {
+        $error = "Phone must start with 9 or 7 and be exactly 8 digits.";
+    } elseif (!preg_match('/^(?=.*[a-zA-Z])[a-zA-Z0-9\s]+$/', $address)) {
+        $error = "Address must contain letters (and can include numbers), not numbers only.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Invalid email format.";
-    } elseif (!preg_match('/@(gmail\.com|hotmail\.com|yahoo\.com|outlook\.com)$/i', $email)) {
-        $error = "Email must be from Gmail, Hotmail, Yahoo, or Outlook.";
+    } elseif (!preg_match('/@(gmail\.com|hotmail\.com|yahoo\.com|outlook\.com|facebook\.com)$/i', $email)) {
+        $error = "Email must be from Gmail, Hotmail, Yahoo, Outlook, or Facebook.";
     } else {
         $certFile = $doctor['certificates'];
         if (!empty($_FILES['certificates']['name'])) {

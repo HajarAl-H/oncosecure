@@ -21,13 +21,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         move_uploaded_file($_FILES['certificates']['tmp_name'], __DIR__ . '/../' . $cert_file);
     }
 
-    // Validations
+    // === Validation ===
     if (!$name || !$email || !$phone || !$address) {
         $error = "All fields are required.";
-    } elseif (!preg_match('/@(gmail\.com|hotmail\.com|yahoo\.com|facebook\.com)$/i', $email)) {
-        $error = "Email must be Gmail, Hotmail, Yahoo, or Facebook.";
-    } elseif (!preg_match('/^[0-9]{8}$/', $phone)) {
-        $error = "Phone must be 8 digits.";
+    } elseif (!preg_match('/^[a-zA-Z\s]+$/', $name)) {
+        $error = "Name must contain only letters and spaces.";
+    } elseif (!preg_match('/^[97][0-9]{7}$/', $phone)) {
+        $error = "Phone must start with 9 or 7 and be exactly 8 digits.";
+    } elseif (!preg_match('/^(?=.*[a-zA-Z])[a-zA-Z0-9\s]+$/', $address)) {
+        $error = "Address must contain letters (and can include numbers), not numbers only.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Invalid email address.";
+    } elseif (!preg_match('/@(gmail\.com|hotmail\.com|yahoo\.com|facebook\.com|outlook\.com)$/i', $email)) {
+        $error = "Email must be Gmail, Hotmail, Yahoo, Facebook or Outlook.";
     } else {
         $temp = bin2hex(random_bytes(4)); // temp password
         $hash = password_hash($temp, PASSWORD_DEFAULT);
