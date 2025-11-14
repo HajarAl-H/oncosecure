@@ -8,32 +8,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name     = sanitize($_POST['name'] ?? '');
         $email    = sanitize($_POST['email'] ?? '');
         $pw       = $_POST['password'] ?? '';
+        $confirm_pw = $_POST['confirm_password'] ?? '';
         $age      = intval($_POST['age'] ?? 0);
         $phone    = sanitize($_POST['phone'] ?? '');
         $address  = sanitize($_POST['address'] ?? '');
         $marital_status = sanitize($_POST['marital_status'] ?? '');
 
         // === Validations ===
-        if (!$name || !$email || !$pw || !$age || !$phone || !$address || !$marital_status) {
+        if (!$name || !$email || !$pw || !$confirm_pw || !$age || !$phone || !$address || !$marital_status) {
             $error = "All fields are required.";
+
+        } elseif ($pw !== $confirm_pw) {
+            $error = "Passwords do not match.";
+
         } elseif (!preg_match('/^[a-zA-Z\s]+$/', $name)) {
             $error = "Name must contain only letters and spaces.";
+
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = "Invalid email address.";
+
         } elseif (!preg_match('/@(gmail\.com|hotmail\.com|yahoo\.com|facebook\.com)$/i', $email)) {
             $error = "Email must be Gmail, Hotmail, Yahoo or Facebook.";
+
         } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $pw)) {
             $error = "Password must be at least 8 characters, include upper and lower case letters, a number, and a special character.";
+
         } elseif ($age < 16 || $age > 80) {
             $error = "Age must be between 16 and 80.";
+
         } elseif (!preg_match('/^[97][0-9]{7}$/', $phone)) {
             $error = "Phone must start with 9 or 7 and be exactly 8 digits.";
+
         } elseif (!preg_match('/^(?=.*[a-zA-Z])[a-zA-Z0-9\s]+$/', $address)) {
             $error = "Address must contain letters (and can include numbers), not numbers only.";
+
         } elseif (!in_array($marital_status, ['single','married','other'])) {
             $error = "Invalid marital status.";
+
         } else {
-            // ✅ All good -> Insert into DB
+            // Insert into DB
             $hash = password_hash($pw, PASSWORD_DEFAULT);
             try {
                 // Insert into users
@@ -50,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash_set('success', 'Account created. Please login.');
                 header("Location: login.php");
                 exit;
+
             } catch (PDOException $e) {
                 $error = "Email already registered.";
             }
@@ -82,9 +96,11 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="mb-3">
     <label>Password</label>
     <input class="form-control" type="password" name="password" required>
-    <small class="form-text text-muted">
-      Must be at least 8 characters, include upper and lower case letters, a number, and a special character.
-    </small>
+  </div>
+
+  <div class="mb-3">
+    <label>Confirm Password</label>
+    <input class="form-control" type="password" name="confirm_password" required>
   </div>
 
   <div class="mb-3">
@@ -95,13 +111,11 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="mb-3">
     <label>Phone</label>
     <input class="form-control" type="text" name="phone" maxlength="8" required>
-    <small class="form-text text-muted">Must start with 9 or 7 and be 8 digits.</small>
   </div>
 
   <div class="mb-3">
     <label>Address</label>
     <input class="form-control" type="text" name="address" required>
-    <small class="form-text text-muted">Must contain letters (can include numbers), not numbers only.</small>
   </div>
 
   <div class="mb-3">

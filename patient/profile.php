@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!check_csrf($_POST['csrf'] ?? '')) die('CSRF mismatch');
 
     $age      = intval($_POST['age'] ?? 0);
-    $weight   = floatval($_POST['weight'] ?? 0);
     $phone    = sanitize($_POST['phone'] ?? '');
     $address  = sanitize($_POST['address'] ?? '');
     $marital  = sanitize($_POST['marital_status'] ?? '');
@@ -31,9 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // ✅ Update profile (no medical history here)
         $stmt = $pdo->prepare("UPDATE patients 
-                               SET age = ?, weight = ?, phone = ?, address = ?, marital_status = ?
+                               SET age = ?, phone = ?, address = ?, marital_status = ?
                                WHERE user_id = ?");
-        $stmt->execute([$age, $weight, $phone, $address, $marital, $uid]);
+        $stmt->execute([$age, $phone, $address, $marital, $uid]);
 
         logAction($pdo, $uid, "Patient updated profile");
         flash_set('success','Profile updated.');
@@ -59,11 +58,6 @@ require_once __DIR__ . '/../includes/header.php';
            value="<?= htmlspecialchars($patient['age'] ?? '') ?>" required>
   </div>
 
-  <div class="mb-3">
-    <label>Weight (kg)</label>
-    <input class="form-control" type="number" step="0.1" name="weight" 
-           value="<?= htmlspecialchars($patient['weight'] ?? '') ?>">
-  </div>
 
   <div class="mb-3">
     <label>Phone</label>
