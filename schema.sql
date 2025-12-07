@@ -12,6 +12,7 @@ CREATE TABLE users (
   experience VARCHAR(255) NULL,
   certificates VARCHAR(255) NULL,
   password VARCHAR(255) NOT NULL,
+  temp_password_expires_at DATETIME DEFAULT NULL,
   force_password_change TINYINT(1) DEFAULT 0,
   role ENUM('admin','doctor','patient') NOT NULL DEFAULT 'patient',
   failed_attempts INT DEFAULT 0,

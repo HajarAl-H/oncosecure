@@ -43,22 +43,23 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <h2>Verify OTP</h2>
-<?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
+<?php if (isset($error))
+    echo "<div class='alert alert-danger'>$error</div>"; ?>
 
 <form method="post" class="w-50">
-  <input type="hidden" name="csrf" value="<?= $token ?>">
+    <input type="hidden" name="csrf" value="<?= $token ?>">
 
-  <div class="mb-3">
-    <label>Email</label>
-    <input class="form-control" name="email" value="<?= htmlspecialchars($email) ?>" required>
-  </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <input class="form-control" name="email" value="<?= htmlspecialchars($email) ?>" required>
+    </div>
 
-  <div class="mb-3">
-    <label>OTP Code</label>
-    <input class="form-control" name="otp" required>
-  </div>
+    <div class="mb-3">
+        <label>OTP Code</label>
+        <input class="form-control" name="otp" required>
+    </div>
 
-  <button class="btn btn-primary" type="submit">Verify OTP</button>
+    <button class="btn btn-primary" type="submit">Verify OTP</button>
 </form>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

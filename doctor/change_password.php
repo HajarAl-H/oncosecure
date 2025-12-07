@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Password must be at least 8 chars, include upper & lower case letters, a number and special char.";
     } else {
         $hash = password_hash($pw, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("UPDATE users SET password=?, force_password_change=1 WHERE id=?");
+        $stmt = $pdo->prepare("UPDATE users SET password=?, temp_password_expires_at = NULL, force_password_change=1 WHERE id=?");
         $stmt->execute([$hash, $uid]);
         logAction($pdo, $uid, "Changed password on first login");
         flash_set('success', 'Password changed successfully.');

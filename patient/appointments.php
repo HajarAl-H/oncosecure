@@ -14,6 +14,7 @@ if (!$patient) {
   exit;
 }
 $patient_id = $patient['id'];
+$today = date('Y-m-d');
 
 
 // =========================
@@ -28,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
   $dateOnly = sanitize($_POST['appointment_date']);
   $timeOnly = sanitize($_POST['appointment_time']);
   $notes = trim($_POST['notes'] ?? '');
+
 
   // 🛑 Prevent special characters in notes
   if (!preg_match('/^[a-zA-Z0-9\s.,-_]*$/', $notes)) {
@@ -75,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     exit;
   }
 
-  // Prevent doctor double booking
-  $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appointment_date = ?");
+  // Prevent doctor double booking when appointment already approved
+  $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appointment_date = ? AND status = 'approved'");
   $stmt->execute([$doctor_id, $date]);
   if ($stmt->fetchColumn() > 0) {
     flash_set('error', 'This doctor already has an appointment at this time.');
@@ -93,12 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     exit;
   }
 
-  // Save appointment
+  // Save appointment (encrypt notes)
+  $encryptedNotes = $notes ? encrypt_aes($notes) : null;
   $stmt = $pdo->prepare("
         INSERT INTO appointments (patient_id, doctor_id, appointment_date, notes)
         VALUES (?, ?, ?, ?)
     ");
-  $stmt->execute([$patient_id, $doctor_id, $date, $notes]);
+  $stmt->execute([$patient_id, $doctor_id, $date, $encryptedNotes]);
 
   logAction($pdo, $uid, "Booked appointment with doctor $doctor_id at $date");
   flash_set('success', 'Appointment booked successfully.');
@@ -161,7 +164,7 @@ require_once __DIR__ . '/../includes/header.php';
 
   <div class="mb-3">
     <label>Doctor</label>
-    <select name="doctor_id" class="form-control" required>
+    <select name="doctor_id" id="doctor_id" class="form-control" required>
       <?php foreach ($doctors as $d): ?>
         <option value="<?= $d['id'] ?>"><?= htmlspecialchars($d['name']) ?></option>
       <?php endforeach; ?>
@@ -170,21 +173,15 @@ require_once __DIR__ . '/../includes/header.php';
 
   <div class="mb-3">
     <label>Date</label>
-    <input class="form-control" type="date" name="appointment_date" required>
+    <input class="form-control" type="date" name="appointment_date" id="appointment_date" min="<?= $today ?>" required>
   </div>
 
   <div class="mb-3">
     <label>Time (30-minute intervals)</label>
-    <select class="form-control" name="appointment_time" required>
-      <?php
-      for ($hour = 8; $hour <= 17; $hour++) {
-        foreach ([0, 30] as $min) {
-          $t = sprintf("%02d:%02d", $hour, $min);
-          echo "<option value='$t'>$t</option>";
-        }
-      }
-      ?>
+    <select class="form-control" name="appointment_time" id="appointment_time" required disabled>
+      <option value="">Select doctor and date first</option>
     </select>
+    <div class="form-text" id="slot-helper">Choose a doctor and date to view available slots.</div>
   </div>
 
   <div class="mb-3">
@@ -196,6 +193,72 @@ require_once __DIR__ . '/../includes/header.php';
 
   <button class="btn btn-primary" name="book" type="submit">Book</button>
 </form>
+
+<script>
+  const doctorSelect = document.getElementById('doctor_id');
+  const dateInput = document.getElementById('appointment_date');
+  const timeSelect = document.getElementById('appointment_time');
+  const slotHelper = document.getElementById('slot-helper');
+
+  function setSelectState(enabled) {
+    timeSelect.disabled = !enabled;
+  }
+
+  function showMessage(message, isError = false) {
+    if (!slotHelper) return;
+    slotHelper.textContent = message;
+    slotHelper.classList.toggle('text-danger', isError);
+  }
+
+  async function loadSlots() {
+    const doctorId = doctorSelect.value;
+    const dateValue = dateInput.value;
+
+    if (!doctorId || !dateValue) {
+      timeSelect.innerHTML = '<option value="">Select doctor and date first</option>';
+      setSelectState(false);
+      showMessage('Choose a doctor and date to view available slots.');
+      return;
+    }
+
+    setSelectState(false);
+    showMessage('Loading available slots...');
+    timeSelect.innerHTML = '';
+
+    try {
+      const response = await fetch(`get_available_slots.php?doctor_id=${doctorId}&date=${dateValue}`);
+      if (!response.ok) throw new Error('Failed to load slots');
+      const data = await response.json();
+
+      const slots = Array.isArray(data.slots) ? data.slots : [];
+      timeSelect.innerHTML = '';
+
+      if (!slots.length) {
+        timeSelect.innerHTML = '<option value="">No available slots</option>';
+        showMessage('Doctor has no approved slots available for this date.', true);
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      slots.forEach((slot) => {
+        const opt = document.createElement('option');
+        opt.value = slot;
+        opt.textContent = slot;
+        frag.appendChild(opt);
+      });
+
+      timeSelect.appendChild(frag);
+      setSelectState(true);
+      showMessage('Select one of the available slots.');
+    } catch (error) {
+      timeSelect.innerHTML = '<option value="">Could not load slots</option>';
+      showMessage('Could not load available slots. Please try again.', true);
+    }
+  }
+
+  doctorSelect.addEventListener('change', loadSlots);
+  dateInput.addEventListener('change', loadSlots);
+</script>
 
 
 <!-- ========================= -->
@@ -232,7 +295,8 @@ require_once __DIR__ . '/../includes/header.php';
             <span class="badge bg-danger">Cancelled</span>
           <?php endif; ?>
         </td>
-        <td><?= nl2br(htmlspecialchars($a['notes'])) ?></td>
+        <?php $noteText = $a['notes'] ? decrypt_aes($a['notes']) : ''; ?>
+        <td><?= nl2br(htmlspecialchars($noteText)) ?></td>
         <td>
           <?php if ($a['status'] === 'pending'): ?>
             <a class="btn btn-sm btn-danger" href="?cancel=<?= $a['id'] ?>"

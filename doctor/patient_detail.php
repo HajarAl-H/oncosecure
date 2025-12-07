@@ -41,7 +41,7 @@ if ($appointment_id) {
 
   if ($appt) {
     $appointment_status = $appt['status'];
-    $appointment_notes = $appt['notes'];
+    $appointment_notes = $appt['notes'] ? decrypt_aes($appt['notes']) : '';
   }
 }
 
@@ -160,6 +160,23 @@ require_once __DIR__ . '/../includes/header.php';
         <p><strong>Phone:</strong> <?= htmlspecialchars($patient['phone']) ?></p>
         <p><strong>Marital:</strong> <?= htmlspecialchars($patient['marital_status']) ?></p>
         <p><strong>Address:</strong> <?= htmlspecialchars($patient['address']) ?></p>
+        <?php if ($appointment_id): ?>
+          <?php
+          $stmt = $pdo->prepare("SELECT appointment_date FROM appointments WHERE id = ?");
+          $stmt->execute([$appointment_id]);
+          $appt_details = $stmt->fetch();
+          if ($appt_details && $appt_details['appointment_date']):
+            $appt_datetime = new DateTime($appt_details['appointment_date']);
+            ?>
+            <div class="mt-3 pt-3 border-top">
+              <h6 class="mb-2">Appointment Details</h6>
+              <p class="mb-1"><strong>Date:</strong> <?= $appt_datetime->format('F j, Y') ?></p>
+              <p class="mb-1"><strong>Time:</strong> <?= $appt_datetime->format('h:i A') ?></p>
+            </div>
+            <?php
+          endif;
+        endif;
+        ?>
       </div>
     </div>
   </div>
@@ -200,7 +217,7 @@ require_once __DIR__ . '/../includes/header.php';
 
 <!-- Add Report -->
 <div class="card mb-4">
-  <div class="card-header"><strong>Add Medical Report / Observation</strong></div>
+  <div class="card-header"><strong>Add Feedback/ Observation</strong></div>
   <div class="card-body">
 
     <?php if ($appointment_status === 'completed'): ?>

@@ -17,13 +17,14 @@ if (!$doctor) {
     exit;
 }
 
-// Generate new password
+// Generate new password (expires in 10 minutes)
 $newPass = bin2hex(random_bytes(4)); // 8-char temporary password
 $hash = password_hash($newPass, PASSWORD_DEFAULT);
+$expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
-// Update password
-$stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-$stmt->execute([$hash, $id]);
+// Update password, set expiry, and enforce first-login change
+$stmt = $pdo->prepare("UPDATE users SET password = ?, temp_password_expires_at = ?, force_password_change = 0 WHERE id = ?");
+$stmt->execute([$hash, $expiresAt, $id]);
 
 logAction($pdo, $_SESSION['user_id'], "Reset password for doctor ID {$id}");
 

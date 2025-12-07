@@ -63,16 +63,18 @@ require_once __DIR__ . '/../includes/header.php';
   </thead>
   <tbody>
     <?php
-    $stmt = $pdo->prepare("
-        SELECT a.*, u.name AS patient_name, u.email AS patient_email
-        FROM appointments a
-        JOIN patients p ON a.patient_id = p.id
-        JOIN users u ON p.user_id = u.id
-        WHERE a.doctor_id = ?
-        ORDER BY a.created_at DESC
-    ");
-    $stmt->execute([$user_id]);
-    $appointments = $stmt->fetchAll();
+$stmt = $pdo->prepare("
+    SELECT a.*, u.name AS patient_name, u.email AS patient_email,
+           DATE_FORMAT(a.appointment_date, '%W, %M %e, %Y') as formatted_date,
+           DATE_FORMAT(a.appointment_date, '%h:%i %p') as formatted_time
+    FROM appointments a
+    JOIN patients p ON a.patient_id = p.id
+    JOIN users u ON p.user_id = u.id
+    WHERE a.doctor_id = ?
+    ORDER BY a.appointment_date DESC
+");
+$stmt->execute([$user_id]);
+$appointments = $stmt->fetchAll();
 
     foreach ($appointments as $a):
       $status = $a['status'];

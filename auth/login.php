@@ -1,6 +1,10 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
+
 require_once __DIR__ . '/../includes/functions.php';
+if (isset($_GET['password_changed'])) {
+    flash_set('success', 'Your password has been changed successfully. Please login with your new password.');
+}
 
 // ---- Handle form POST ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
@@ -37,6 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         logAction($pdo, $user['id'], "Login attempt while locked");
         header("Location: login.php");
         exit;
+    }
+
+    // Temporary admin-issued passwords expire after 10 minutes
+    if ((int) $user['force_password_change'] === 0 && !empty($user['temp_password_expires_at'])) {
+        if (strtotime($user['temp_password_expires_at']) < time()) {
+            $_SESSION['login_error'] = "Temporary password expired. Contact the administrator for a new reset.";
+            logAction($pdo, $user['id'], "Login blocked - temporary password expired");
+            header("Location: login.php");
+            exit;
+        }
     }
 
     if (password_verify($pw, $user['password'])) {
